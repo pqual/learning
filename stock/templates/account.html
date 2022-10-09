@@ -2,16 +2,45 @@
 {% block content %}
     <div>
         <h4>Денежные средства</h4>
-        {% for acc_currency in currencies %}
-            <div>{{ acc_currency.amount }}{{ acc_currency.sign }}</div>
-        {% endfor %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Валюта</th>
+                    <th>Сумма</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for acc_currency in currencies %}
+                <tr>
+                    <td>{{ acc_currency.name }}</td>
+                    <td>{{ acc_currency.amount }} {{ acc_currency.sign }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
     <div>
         <h4>Акции</h4>
-        {% for acc_stock in stocks %}
-            <div>{{ acc_stock.ticker }} - {{ acc_stock.amount }}
-            - {{ acc_stock.avg }}</div>
-        {% endfor %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Тикер</th>
+                    <th>Количество</th>
+                    <th>Средняя цена</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for acc_stock in stocks %}
+                <tr>
+                    <td>{{ acc_stock.ticker }}</td>
+                    <td>{{ acc_stock.amount }}</td>
+                    <td>{{ acc_stock.avg }} {{ acc_stock.currency }}
+                        <a href="{% url 'stock:acc_stock' acc_stock.pk %}">Продать</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
     <div>
         <a href="{% url 'stock:list' %}">К списку акций</a>

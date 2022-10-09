@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
     <div>
-        Акции {{ stock.name }} ({{ stock.ticker }})
+        <span class="h4">Акции {{ stock.name }} ({{ stock.ticker }})</span>
         <img src="{{ MEDIA_URL }}/{{ stock.logo }}" width="40" />
     </div>
     <div>

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+    <div>
+        <span class="h4">Акции {{ acc_stock.stock.name }} ({{ acc_stock.stock.ticker }})</span>
+        <img src="{{ MEDIA_URL }}/{{ acc_stock.stock.logo }}" width="40" />
+    </div>
+    <div class="alert alert-info">Акций на счету: {{ acc_stock.amount }}</div>
+    <div>
+        <form method="POST" action="{% url 'stock:sell' acc_stock.pk %}">
+            {% csrf_token %}
+            {{ form }}
+            <button>Продать</button>
+        </form>
+    </div>
+{% endblock %}

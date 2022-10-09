@@ -79,6 +79,7 @@ def account(request):
         print(currencies)
         currencies = [
             {
+                "name": acc_currency.currency.name,
                 "amount": acc_currency.amount,
                 "sign": acc_currency.currency.sign
             } for acc_currency in request.user.account.accountcurrency_set.select_related("currency")
@@ -88,9 +89,11 @@ def account(request):
     if stocks is None:
         stocks = [
             {
+                "pk": acc_stock.pk,
                 "ticker": acc_stock.stock.ticker,
                 "amount": acc_stock.amount,
-                "avg": acc_stock.average_buy_cost
+                "avg": acc_stock.average_buy_cost,
+                "currency": acc_stock.stock.currency.sign
             } for acc_stock in request.user.account.accountstock_set.select_related("stock").all()
         ]
         cache.set(f"stocks_{request.user.username}", stocks, 300)
@@ -101,3 +104,50 @@ def account(request):
     }
 
     return render(request, template_name="account.html", context=context)
+
+@login_required
+def acc_stock(request, pk):
+    acc_stock = get_object_or_404(AccountStock, pk=pk)
+
+    form = BuySellForm(max_count=acc_stock.amount, initial={"price":acc_stock.stock.get_random_price()})
+
+    context = {
+        "acc_stock": acc_stock,
+        "form": form
+    }
+
+    return render(request, template_name="acc_stock.html", context=context)
+
+@login_required
+def stock_sell(request, pk):
+    if request.method != "POST":
+        return redirect("stock:acc_stock", pk=pk)
+
+    acc_stock = get_object_or_404(AccountStock, pk=pk)
+    form = BuySellForm(request.POST, max_count=acc_stock.amount)
+
+    if form.is_valid():
+        amount = form.cleaned_data["amount"]
+        price = form.cleaned_data["price"]
+
+        acc_currency, created = AccountCurrency.objects.get_or_create(
+            account=request.user.account, currency=acc_stock.stock.currency,
+            defaults={"amount":0}
+        )
+
+        sell_cost = price * amount
+        total_amount = acc_stock.amount - amount
+
+        acc_stock.amount = total_amount
+        acc_currency.amount = acc_currency.amount + sell_cost
+
+        acc_stock.save()
+        acc_currency.save()
+        return redirect("stock:account")
+
+    context = {
+        "acc_stock": acc_stock,
+        "form": form
+    }
+
+    return render(request, template_name="acc_stock.html", context=context)
